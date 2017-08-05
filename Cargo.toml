@@ -1,0 +1,20 @@
+[package]
+name = "aci_png"
+version = "0.1.0"
+authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
+description = """
+Aldaron's Codec Interface - PNG: A library for decoding png image files.
+"""
+keywords = [ "Image", "PNG", "Codec", "Parse" ]
+categories = [
+	"data-structures", "encoding", "parser-implementations", "parsing"
+]
+license = "MIT"
+documentation = "https://docs.rs/aci_png/"
+homepage = "https://docs.rs/crate/aci_png/"
+repository = "https://github.com/aldarons-tech/aci_png"
+readme = "README.md"
+exclude = [ "examples/*", ".gitignore", "TODO" ]
+
+[dependencies]
+png = "^0.9"
