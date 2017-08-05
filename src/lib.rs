@@ -6,6 +6,16 @@ pub enum DecodeErrorPNG {
 	NotPNG,
 	/// Dimensions are not numbers
 	BadNum,
+	/// Not yet implemented
+	GrayscaleNYI,
+	/// Not yet implemented
+	RgbNYI,
+	/// Not yet implemented
+	IndexedNYI,
+	/// Not yet implemented
+	AGrayscaleNYI,
+	/// Bits NYI
+	BitsNYI,
 }
 
 impl ::std::fmt::Display for DecodeErrorPNG {
@@ -13,6 +23,11 @@ impl ::std::fmt::Display for DecodeErrorPNG {
 		write!(f, "Couldn't parse PNG because: {}", match *self {
 			DecodeErrorPNG::NotPNG => "Not a PNG file (bad header)",
 			DecodeErrorPNG::BadNum => "Dimensions are not numbers",
+			DecodeErrorPNG::GrayscaleNYI => "NYI: Grayscale",
+			DecodeErrorPNG::RgbNYI => "NYI: RGB",
+			DecodeErrorPNG::IndexedNYI => "NYI: Indexed",
+			DecodeErrorPNG::AGrayscaleNYI => "NYI: AGrayscale",
+			DecodeErrorPNG::BitsNYI => "NYI: bad bits",
 		})
 	}
 }
@@ -27,6 +42,22 @@ pub fn decode(png: &'static [u8])
 
 	let mut buf = vec![0; info.buffer_size()];
 	reader.next_frame(&mut buf).unwrap();
+
+	let (color, bit) = reader.output_color_type();
+
+	use png::ColorType::*;
+
+	match color {
+		Grayscale => return Err(DecodeErrorPNG::GrayscaleNYI),
+		RGB => return Err(DecodeErrorPNG::RgbNYI),
+		Indexed => return Err(DecodeErrorPNG::IndexedNYI),
+		GrayscaleAlpha => return Err(DecodeErrorPNG::AGrayscaleNYI),
+		RGBA => {},
+	}
+
+	if bit != png::BitDepth::Eight {
+		return Err(DecodeErrorPNG::BitsNYI)
+	}
 
 	Ok((info.width, info.height, buf))
 }
