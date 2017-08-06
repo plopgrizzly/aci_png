@@ -1,6 +1,6 @@
 [package]
 name = "aci_png"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
 description = """
 Aldaron's Codec Interface - PNG: A library for decoding png image files.
@@ -12,7 +12,7 @@ categories = [
 license = "MIT"
 documentation = "https://docs.rs/aci_png/"
 homepage = "https://docs.rs/crate/aci_png/"
-repository = "https://github.com/aldarons-tech/aci_png"
+repository = "https://github.com/aldarons-tech/aci_png/"
 readme = "README.md"
 exclude = [ "examples/*", ".gitignore", "TODO" ]
 
