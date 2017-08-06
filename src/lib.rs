@@ -1,3 +1,9 @@
+// lib.rs
+// Aldaron's Codec Interface - PNG
+// Copyright 2017 (c) Aldaron's Tech
+// Copyright 2017 (c) Jeron Lau
+// Licensed under the MIT LICENSE
+
 extern crate png;
 
 /// The errors that can be returned if `decode()` fails.
