@@ -1,8 +1,8 @@
-// lib.rs
 // Aldaron's Codec Interface - PNG
-// Copyright 2017 (c) Aldaron's Tech
-// Copyright 2017 (c) Jeron Lau
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
+//
+// src/lib.rs
 
 extern crate png;
 

@@ -1,3 +1,18 @@
+# Aldaron's Codec Interface - PNG                                              #
+# Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>       #
+# Licensed under the MIT LICENSE                                               #
+#                             _        _                                       #
+#                            /@\——————/@\                                      #
+# .———  .                   |   o    o   |     .————      .            .       #
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   . #
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   | #
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /  #
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |   #
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |   #
+#                 |        \              /                              __/   #
+#                           ¯————————————¯                                     #
+# Cargo.toml                                                                   #
+
 [package]
 name = "aci_png"
 version = "0.2.0"
@@ -10,9 +25,9 @@ categories = [
 	"data-structures", "encoding", "parser-implementations", "parsing"
 ]
 license = "MIT"
-documentation = "https://docs.rs/aci_png/"
-homepage = "https://docs.rs/crate/aci_png/"
-repository = "https://github.com/aldarons-tech/aci_png/"
+documentation = "https://docs.rs/aci_png"
+homepage = "http://plopgrizzly.com/aci_png"
+repository = "https://github.com/plopgrizzly/aci_png"
 readme = "README.md"
 exclude = [ "examples/*", ".gitignore", "TODO" ]
 
