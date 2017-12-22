@@ -16,38 +16,10 @@ extern crate ami;
 extern crate afi;
 extern crate png;
 
-/// The errors that can be returned if `decode()` fails.
-#[derive(Debug)]
-pub enum DecodeErrorPNG {
-	/// Not a PNG file (bad header)
-	NotPNG,
-	/// Dimensions are not numbers
-	BadNum,
-	/// Not yet implemented
-	GrayscaleNYI,
-	/// Not yet implemented
-	IndexedNYI,
-	/// Not yet implemented
-	AGrayscaleNYI,
-	/// Bits NYI
-	BitsNYI,
-}
-
-impl ::std::fmt::Display for DecodeErrorPNG {
-	fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-		write!(f, "Couldn't parse PNG because: {}", match *self {
-			DecodeErrorPNG::NotPNG => "Not a PNG file (bad header)",
-			DecodeErrorPNG::BadNum => "Dimensions are not numbers",
-			DecodeErrorPNG::GrayscaleNYI => "NYI: Grayscale",
-			DecodeErrorPNG::IndexedNYI => "NYI: Indexed",
-			DecodeErrorPNG::AGrayscaleNYI => "NYI: AGrayscale",
-			DecodeErrorPNG::BitsNYI => "NYI: bad bits",
-		})
-	}
-}
+pub use afi::GraphicDecodeErr;
 
 /// Decode PNG data.  On success, returns the png as a `Graphic`.
-pub fn decode(png: &'static [u8]) -> Result<afi::Graphic, DecodeErrorPNG> {
+pub fn decode(png: &[u8]) -> Result<afi::Graphic, GraphicDecodeErr> {
 	use png::ColorType::*;
 
 	let decoder = png::Decoder::new(png);
@@ -92,13 +64,13 @@ pub fn decode(png: &'static [u8]) -> Result<afi::Graphic, DecodeErrorPNG> {
 
 			afi::GraphicBuilder::new().rgba(out)
 		},
-		Grayscale => return Err(DecodeErrorPNG::GrayscaleNYI),
-		Indexed => return Err(DecodeErrorPNG::IndexedNYI),
-		GrayscaleAlpha => return Err(DecodeErrorPNG::AGrayscaleNYI),
+		Grayscale => return Err(GraphicDecodeErr::GrayscaleNYI),
+		Indexed => return Err(GraphicDecodeErr::IndexedNYI),
+		GrayscaleAlpha => return Err(GraphicDecodeErr::AGrayscaleNYI),
 	};
 
 	if bit != png::BitDepth::Eight {
-		return Err(DecodeErrorPNG::BitsNYI)
+		return Err(GraphicDecodeErr::BitsNYI)
 	}
 
 	Ok(graphic)
