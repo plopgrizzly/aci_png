@@ -1,4 +1,4 @@
-# Aldaron's Codec Interface / PNG (aci_png 0.4.0)
+# Aldaron's Codec Interface / PNG (aci_png 0.5.0)
 Aldaron's Codec Interface / PNG is a library developed by Plop Grizzly for
 decoding pngs and apngs.
 

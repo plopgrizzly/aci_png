@@ -16,10 +16,11 @@ extern crate ami;
 extern crate afi;
 extern crate png;
 
-pub use afi::GraphicDecodeErr;
+use afi::GraphicBuilder;
+pub use afi::{ Graphic, GraphicDecodeErr };
 
 /// Decode PNG data.  On success, returns the png as a `Graphic`.
-pub fn decode(png: &[u8]) -> Result<afi::Graphic, GraphicDecodeErr> {
+pub fn decode(png: &[u8]) -> Result<Graphic, GraphicDecodeErr> {
 	use png::ColorType::*;
 
 	let decoder = png::Decoder::new(png);
@@ -29,10 +30,7 @@ pub fn decode(png: &[u8]) -> Result<afi::Graphic, GraphicDecodeErr> {
 	reader.next_frame(&mut buf).unwrap();
 
 	let size = (info.width * info.height) as usize;
-	let mut out : ami::Vec<u32> = ami::Vec::with_capacity(size + 2);
-
-	out.push(info.width);
-	out.push(info.height);
+	let mut out : ami::Vec<u32> = ami::Vec::with_capacity(size);
 
 	let (color, bit) = reader.output_color_type();
 
@@ -48,7 +46,7 @@ pub fn decode(png: &[u8]) -> Result<afi::Graphic, GraphicDecodeErr> {
 				out.push(unsafe {::std::mem::transmute(pixel)});
 			}
 
-			afi::GraphicBuilder::new().rgba(out)
+			GraphicBuilder::new().rgba(info.width, info.height, out)
 		},
 		RGBA => {
 			let mut pixel : [u8;4] = [0xFF, 0xFF, 0xFF, 0xFF];
@@ -62,7 +60,7 @@ pub fn decode(png: &[u8]) -> Result<afi::Graphic, GraphicDecodeErr> {
 				out.push(unsafe {::std::mem::transmute(pixel)});
 			}
 
-			afi::GraphicBuilder::new().rgba(out)
+			GraphicBuilder::new().rgba(info.width, info.height, out)
 		},
 		Grayscale => return Err(GraphicDecodeErr::GrayscaleNYI),
 		Indexed => return Err(GraphicDecodeErr::IndexedNYI),
