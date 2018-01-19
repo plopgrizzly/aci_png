@@ -12,7 +12,6 @@
 	html_favicon_url = "http://plopgrizzly.com/icon.png",
 	html_root_url = "http://plopgrizzly.com/aci_png/")]
 
-extern crate ami;
 extern crate afi;
 extern crate png;
 
@@ -30,7 +29,7 @@ pub fn decode(png: &[u8]) -> Result<Graphic, GraphicDecodeErr> {
 	reader.next_frame(&mut buf).unwrap();
 
 	let size = (info.width * info.height) as usize;
-	let mut out : ami::Vec<u32> = ami::Vec::with_capacity(size);
+	let mut out : Vec<u32> = Vec::with_capacity(size);
 
 	let (color, bit) = reader.output_color_type();
 
