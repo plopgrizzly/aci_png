@@ -1,53 +1,39 @@
-# Aldaron's Codec Interface / PNG                                              #
-# Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>       #
-# Licensed under the MIT LICENSE                                               #
-#                             _        _                                       #
-#                            /@\——————/@\                                      #
-# .———  .                   |   o    o   |     .————      .            .       #
-# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   . #
-# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   | #
-# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /  #
-# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |   #
-# |     |   ———   |       |                |    ————  |   | :——— :———  |   |   #
-#                 |        \              /                              __/   #
-#                           ¯————————————¯                                     #
-# Cargo.toml                                                                   #
-
-################################################################################
+# Cargo.toml -- Aldaron's Codec Interface / PNG
+# Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+# Licensed under the MIT LICENSE
+#                             _        _
+#                            /@\——————/@\
+# .———  .                   |   o    o   |     .————      .            .
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
+#                 |        \              /                              __/
+#                           ¯————————————¯
 
 [package]
 name = "aci_png"
-version = "0.5.1"
-authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"]
-
-################################################################################
+version = "0.5.2"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
+]
 
 license = "MIT"
 documentation = "https://docs.rs/aci_png"
 homepage = "http://plopgrizzly.com/aci_png"
 repository = "https://github.com/plopgrizzly/aci_png"
 
-################################################################################
-
 readme = "README.md"
-description = """
-    Aldaron's Codec Interface / PNG is a library developed by Plop Grizzly for
-    decoding png image files.
-"""
+description = "Encode(TODO) and decode png and apng(TODO) image files."
 keywords = ["image", "png", "codec", "parse", "decoder"]
 categories = ["encoding", "parsing", "data-structures", "multimedia"]
 
-################################################################################
-
 exclude = [
 	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
-	"_config.yml", "ISSUE_TEMPLATE.md"
+	"_config.yml", "ISSUE_TEMPLATE.md", "icon.ico", "icon.png"
 ]
-
-################################################################################
 
 [dependencies]
 png = "^0.11"
-afi = "^0.3.1"
-
-################################################################################
+afi = "^0.3.2"
