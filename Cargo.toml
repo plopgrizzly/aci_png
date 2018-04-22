@@ -14,7 +14,7 @@
 
 [package]
 name = "aci_png"
-version = "0.5.2"
+version = "0.6.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
@@ -25,7 +25,7 @@ homepage = "http://plopgrizzly.com/aci_png"
 repository = "https://github.com/plopgrizzly/aci_png"
 
 readme = "README.md"
-description = "Encode(TODO) and decode png and apng(TODO) image files."
+description = "Encode and decode png and apng(TODO) image files."
 keywords = ["image", "png", "codec", "parse", "decoder"]
 categories = ["encoding", "parsing", "data-structures", "multimedia"]
 
@@ -35,5 +35,5 @@ exclude = [
 ]
 
 [dependencies]
-png = "^0.11"
-afi = "^0.3.2"
+afi = "^0.5"
+flate2 = "^0.2"

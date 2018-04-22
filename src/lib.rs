@@ -11,62 +11,49 @@
 	html_root_url = "http://plopgrizzly.com/aci_png/")]
 
 extern crate afi;
-extern crate png;
+
+mod png;
 
 use afi::GraphicBuilder;
 pub use afi::{ Graphic, GraphicDecodeErr };
 
+/// Encode PNG data.
+pub fn encode(mut graphic: Graphic) -> Vec<u8> {
+	let mut out = vec![];
+	graphic.rgba();
+	let graphic = graphic.as_bytes();
+
+	png::write(&mut out, graphic.0, graphic.1,
+		png::ColFmt::RGBA, graphic.2, png::ColFmt::RGBA, None)
+		.unwrap();
+
+	out
+}
+
 /// Decode PNG data.  On success, returns the png as a `Graphic`.
 pub fn decode(png: &[u8]) -> Result<Graphic, GraphicDecodeErr> {
-	use png::ColorType::*;
+	let mut reader = ::std::io::Cursor::new(png);
+	let i: Result<png::Image<u8>, png::Error> = png::read(&mut reader);
+	let image = if let Result::Ok(p) = i { p }
+		else { return Err(GraphicDecodeErr::IncorrectFormat) };
+	let bytes: Vec<u8> = image.buf;
 
-	let decoder = png::Decoder::new(png);
-	let (info, mut reader) = decoder.read_info().unwrap();
-
-	let mut buf = vec![0; info.buffer_size()];
-	reader.next_frame(&mut buf).unwrap();
-
-	let size = (info.width * info.height) as usize;
-	let mut out : Vec<u32> = Vec::with_capacity(size);
-
-	let (color, bit) = reader.output_color_type();
-
-	let graphic = match color {
-		RGB => {
-			let mut pixel : [u8;4] = [0xFF, 0xFF, 0xFF, 0xFF];
-
-			for i in 0..size {
-				pixel[0] = buf[i * 3 + 0];
-				pixel[1] = buf[i * 3 + 1];
-				pixel[2] = buf[i * 3 + 2];
-
-				out.push(unsafe {::std::mem::transmute(pixel)});
-			}
-
-			GraphicBuilder::new().rgba(info.width, info.height, out)
-		},
-		RGBA => {
-			let mut pixel : [u8;4] = [0xFF, 0xFF, 0xFF, 0xFF];
-
-			for i in 0..size {
-				pixel[0] = buf[i * 4 + 0];
-				pixel[1] = buf[i * 4 + 1];
-				pixel[2] = buf[i * 4 + 2];
-				pixel[3] = buf[i * 4 + 3];
-
-				out.push(unsafe {::std::mem::transmute(pixel)});
-			}
-
-			GraphicBuilder::new().rgba(info.width, info.height, out)
-		},
-		Grayscale => return Err(GraphicDecodeErr::GrayscaleNYI),
-		Indexed => return Err(GraphicDecodeErr::IndexedNYI),
-		GrayscaleAlpha => return Err(GraphicDecodeErr::AGrayscaleNYI),
+	let size = (image.w * image.h) as usize;
+	let mut out: Vec<u32> = Vec::with_capacity(size);
+	let mut pixel: u32 = 0xFFFFFFFF;
+	let rgba: &mut [u8] = unsafe {
+		::std::slice::from_raw_parts_mut(&mut pixel as *mut _
+			as *mut u8, 4)
 	};
 
-	if bit != png::BitDepth::Eight {
-		return Err(GraphicDecodeErr::BitsNYI)
+	for i in 0..size {
+		rgba[0] = bytes[i * 4 + 0];
+		rgba[1] = bytes[i * 4 + 1];
+		rgba[2] = bytes[i * 4 + 2];
+		rgba[3] = bytes[i * 4 + 3];
+
+		out.push(pixel);
 	}
 
-	Ok(graphic)
+	Ok(GraphicBuilder::new().rgba(image.w, image.h, out))
 }
