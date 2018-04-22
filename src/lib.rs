@@ -17,15 +17,14 @@ mod png;
 use afi::GraphicBuilder;
 pub use afi::{ Graphic, GraphicDecodeErr };
 
-/// Encode PNG data.
-pub fn encode(mut graphic: Graphic) -> Vec<u8> {
+/// Encode PNG data.  Set `alpha` to `true` if you want to save the alpha
+/// channel.
+pub fn encode(mut graphic: Graphic, alpha: bool) -> Vec<u8> {
 	let mut out = vec![];
 	graphic.rgba();
 	let graphic = graphic.as_bytes();
 
-	png::write(&mut out, graphic.0, graphic.1,
-		png::ColFmt::RGBA, graphic.2, png::ColFmt::RGBA, None)
-		.unwrap();
+	png::write(&mut out, graphic.0, graphic.1, graphic.2, alpha).unwrap();
 
 	out
 }

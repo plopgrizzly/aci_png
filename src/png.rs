@@ -4,6 +4,12 @@
 // Copyright (c) 2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 
+// TODO: APNG support (https://en.wikipedia.org/wiki/APNG)
+// PNG:
+//	PNG SIGNATURE, IHDR, IDAT, IEND
+// APNG:
+//	PNG SIGNATURE, IHDR, acTL, fcTL, IDAT, [fcTL, fdAT], IEND
+
 extern crate flate2;
 use std::io::{Read, Write, Seek, SeekFrom};
 use std::iter::{repeat};
@@ -13,112 +19,10 @@ use self::flate2::Compression;
 use self::internal::Sample;
 use self::internal::{ToVec, Buffer};
 use std;
-use std::{ cmp::min, fmt, io };
+use std::{ fmt, io };
 
 fn copy_line<T: Sample>(src: &[T], tgt: &mut[T], _: usize, _: usize, _: usize, _: usize) {
 	tgt.copy_from_slice(src)
-}
-
-fn y_to_any_ya<T: Sample>(src: &[T], tgt: &mut[T], yi: usize, _: usize, _: usize, ai: usize) {
-	let mut t = 0;
-	for &sb in src {
-		tgt[t+yi] = sb;
-		tgt[t+ai] = T::max_value();
-		t += 2;
-	}
-}
-
-fn y_to_any_rgb<T: Sample>(src: &[T], tgt: &mut[T], ri: usize, gi: usize, bi: usize, _: usize) {
-	let mut t = 0;
-	for &sb in src {
-		tgt[t+ri] = sb;
-		tgt[t+gi] = sb;
-		tgt[t+bi] = sb;
-		t += 3;
-	}
-}
-
-fn y_to_any_rgba<T: Sample>(src: &[T], tgt: &mut[T], ri: usize, gi: usize, bi: usize, ai: usize) {
-	let mut t = 0;
-	for &sb in src {
-		tgt[t+ri] = sb;
-		tgt[t+gi] = sb;
-		tgt[t+bi] = sb;
-		tgt[t+ai] = T::max_value();
-		t += 4;
-	}
-}
-
-fn any_ya_to_y<T: Sample>(src: &[T], tgt: &mut[T], yi: usize, _: usize, _: usize, _: usize) {
-	let mut s = 0;
-	for tb in tgt {
-		*tb = src[s+yi];
-		s += 2;
-	}
-}
-
-fn any_ya_to_any_rgb<T: Sample>(src: &[T], tgt: &mut[T], ri: usize, gi: usize, bi: usize,
-																			sai: usize)
-{
-	let mut s = 0;
-	let mut t = 0;
-	while s < src.len() {
-		tgt[t+ri] = src[s+(1-sai)];
-		tgt[t+gi] = src[s+(1-sai)];
-		tgt[t+bi] = src[s+(1-sai)];
-		s += 2;
-		t += 3;
-	}
-}
-
-fn any_ya_to_any_rgba<T: Sample>(src: &[T], tgt: &mut[T], syi: usize, sai: usize, tci: usize,
-																				tai: usize)
-{
-	let mut s = 0;
-	let mut t = 0;
-	while s < src.len() {
-		tgt[t+tci  ] = src[s+syi];
-		tgt[t+tci+1] = src[s+syi];
-		tgt[t+tci+2] = src[s+syi];
-		tgt[t+tai]   = src[s+sai];
-		s += 2;
-		t += 4;
-	}
-}
-
-fn any_rgba_to_y<T: Sample>(src: &[T], tgt: &mut[T], ri: usize, gi: usize, bi: usize,
-																	 channels: usize)
-{
-	let mut s = 0;
-	for tb in tgt {
-		*tb = luminance(src[s+ri], src[s+gi], src[s+bi]);
-		s += channels;
-	}
-}
-
-fn any_rgb_to_any_ya<T: Sample>(src: &[T], tgt: &mut[T], ri: usize, gi: usize, bi: usize,
-																			tai: usize)
-{
-	let mut s = 0;
-	let mut t = 0;
-	while s < src.len() {
-		tgt[t+1-tai] = luminance(src[s+ri], src[s+gi], src[s+bi]);
-		tgt[t+tai] = T::max_value();
-		s += 3;
-		t += 2;
-	}
-}
-
-fn any_rgba_to_ya<T: Sample>(src: &[T], tgt: &mut[T], ri: usize, gi: usize, bi: usize, ai: usize)
-{
-	let mut s = 0;
-	let mut t = 0;
-	while s < src.len() {
-		tgt[t  ] = luminance(src[s+ri], src[s+gi], src[s+bi]);
-		tgt[t+1] = src[s+ai];
-		s += 4;
-		t += 2;
-	}
 }
 
 fn rgb_to_any_rgba<T: Sample>(src: &[T], tgt: &mut[T], ri: usize, gi: usize, bi: usize, ai: usize)
@@ -164,30 +68,14 @@ fn converter<T: Sample>(src_fmt: ColFmt, tgt_fmt: ColFmt)
 {
 	use self::ColFmt::*;
 
-	let (syi, sri, sgi, sbi, sai) = src_fmt.indices_yrgba();
-	let (tyi, tri, tgi, tbi, tai) = tgt_fmt.indices_yrgba();
-	let tci = min(tri, min(tgi, tbi));
+	let (sri, sgi, sbi, sai) = src_fmt.indices_yrgba();
+	let (tri, tgi, tbi, tai) = tgt_fmt.indices_yrgba();
 
 	match (src_fmt, tgt_fmt) {
-		(Y,Y)|(YA,YA)|(RGB,RGB)|(RGBA,RGBA) => Ok((copy_line, 0, 0, 0, 0)),
-		(Y,YA)	   => Ok((y_to_any_ya, tyi, 0, 0, tai)),
-		(Y,RGB)	   => Ok((y_to_any_rgb, tri, tgi, tbi, 0)),
-		(Y,RGBA)   => Ok((y_to_any_rgba, tri, tgi, tbi, tai)),
-		(YA,Y)     => Ok((any_ya_to_y, syi, 0, 0, 0)),
-		(YA, RGB)  => Ok((any_ya_to_any_rgb, tri, tgi, tbi, sai)),
-		(YA, RGBA) => Ok((any_ya_to_any_rgba, syi, sai, tci, tai)),
-		(RGB, Y) => Ok((any_rgba_to_y, sri, sgi, sbi, src_fmt.channels() as usize)),
-		(RGB, YA) => Ok((any_rgb_to_any_ya, sri, sgi, sbi, tai)),
+		(RGB,RGB)|(RGBA,RGBA) => Ok((copy_line, 0, 0, 0, 0)),
 		(RGB, RGBA) => Ok((rgb_to_any_rgba, tri, tgi, tbi, tai)),
-		(RGBA, Y) => Ok((any_rgba_to_y, sri, sgi, sbi, src_fmt.channels() as usize)),
-		(RGBA, YA) => Ok((any_rgba_to_ya, sri, sgi, sbi, sai)),
 		(RGBA, RGB) => Ok((any_rgba_to_rgb, sri, sgi, sbi, sai)),
-		(Auto, _) | (_, Auto) => Err(::png::Error::Internal("no such converter")),
 	}
-}
-
-fn luminance<T: Sample>(r: T, g: T, b: T) -> T {
-	T::from_f32(0.21 * r.as_f32() + 0.64 * g.as_f32() + 0.15 * b.as_f32())
 }
 
 #[derive(Debug)]
@@ -241,30 +129,21 @@ impl ColFmt {
 	fn channels(&self) -> u32 {
 		use self::ColFmt::*;
 		match *self {
-			Auto => 0,
-			Y    => 1,
-			YA   => 2,
-			RGB  => 3,
+			RGB => 3,
 			RGBA => 4,
 		}
 	}
 
-	fn indices_yrgba(self) -> (usize, usize, usize, usize, usize) {
+	fn indices_yrgba(self) -> (usize, usize, usize, usize) {
 		match self {
-			ColFmt::Y    => (0, 0, 0, 0, 0),
-			ColFmt::YA   => (0, 0, 0, 0, 1),
-			ColFmt::RGB  => (0, 0, 1, 2, 0),
-			ColFmt::RGBA => (0, 0, 1, 2, 3),
-			ColFmt::Auto => (0, 0, 0, 0, 0),
+			ColFmt::RGB  => (0, 1, 2, 0),
+			ColFmt::RGBA => (0, 1, 2, 3),
 		}
 	}
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ColFmt {
-	Auto,
-	Y,
-	YA,
 	RGB,
 	RGBA,
 }
@@ -406,10 +285,8 @@ fn init_decoder<R: Read+Seek>(reader: &mut R, req_bpc: usize)
 	};
 
 	let src_fmt = match hdr.color_type {
-		0 => ColFmt::Y,
 		2 => ColFmt::RGB,
 		3 => ColFmt::RGB,   // format of the palette
-		4 => ColFmt::YA,
 		6 => ColFmt::RGBA,
 		_ => return Err(::png::Error::Unsupported("color type")),
 	};
@@ -429,14 +306,14 @@ fn init_decoder<R: Read+Seek>(reader: &mut R, req_bpc: usize)
 }
 
 struct PngDecoder<'r, R:'r> {
-	stream		: &'r mut R,
+	stream: &'r mut R,
 	w: u32,
 	h: u32,
-	ilace		 : PngInterlace,
-	src_bpc	   : usize,	// bits per channel
-	tgt_bpc	   : usize,
-	src_indexed   : bool,
-	src_fmt	   : ColFmt,
+	ilace: PngInterlace,
+	src_bpc: usize,	// bits per channel
+	tgt_bpc: usize,
+	src_indexed: bool,
+	src_fmt: ColFmt,
 	chunk_lentype: [u8; 8],   // for reading len, type
 	crc: Crc32,
 }
@@ -482,6 +359,7 @@ fn decode<R: Read+Seek>(dc: &mut PngDecoder<R>, chunk_names: &[[u8; 4]])
 
 	loop {
 		match &dc.chunk_lentype[4..8] {
+			// Actual Image Data
 			b"IDAT" => {
 				if !(stage == IhdrParsed || (stage == PlteParsed && dc.src_indexed)) {
 					return Err(::png::Error::InvalidData("corrupt chunk stream"))
@@ -492,6 +370,7 @@ fn decode<R: Read+Seek>(dc: &mut PngDecoder<R>, chunk_names: &[[u8; 4]])
 				stage = IdatParsed;
 				continue;   // skip reading chunk_lentype
 			}
+			// Color Palette
 			b"PLTE" => {
 				let entries = len / 3;
 				if stage != IhdrParsed || len % 3 != 0 || 256 < entries {
@@ -503,6 +382,7 @@ fn decode<R: Read+Seek>(dc: &mut PngDecoder<R>, chunk_names: &[[u8; 4]])
 				try!(readcheck_crc(dc));
 				stage = PlteParsed;
 			}
+			// End of PNG data stream
 			b"IEND" => {
 				if stage != IdatParsed {
 					return Err(::png::Error::InvalidData("corrupt chunk stream"))
@@ -552,10 +432,8 @@ impl PngInterlace {
 }
 
 enum PngColortype {
-	Y	= 0,
 	RGB  = 2,
 	Idx  = 3,
-	YA   = 4,
 	RGBA = 6,
 }
 
@@ -886,35 +764,28 @@ pub struct ExtChunk {
 
 /// Writes an image and converts it to requested color type.
 #[inline]
-pub fn write<W: Write>(writer: &mut W, w: u32, h: u32, src_fmt: ColFmt, data: &[u8],
-	tgt_fmt: ColFmt, src_stride: Option<u32>) -> Result<(), Error>
+pub fn write<W: Write>(writer: &mut W, w: u32, h: u32, data: &[u8], alpha: bool)
+	-> Result<(), Error>
 {
-	write_chunks(writer, w, h, src_fmt, data, tgt_fmt, src_stride, &[])
+	write_chunks(writer, w, h, data, alpha, &[])
 }
 
 /// Like `png::write` but also writes the given extension chunks.
-pub fn write_chunks<W: Write>(writer: &mut W, w: u32, h: u32, src_fmt: ColFmt,
-	data: &[u8], tgt_fmt: ColFmt, src_stride: Option<u32>, chunks: &[ExtChunk])
+pub fn write_chunks<W: Write>(writer: &mut W, w: u32, h: u32, data: &[u8],
+	alpha: bool, chunks: &[ExtChunk])
 		-> Result<(), Error>
 {
-	if src_fmt == ColFmt::Auto { return Err(::png::Error::InvalidArg("invalid format")) }
-	let stride = src_stride.unwrap_or(w * src_fmt.channels());
-
-	if w < 1 || h < 1
-	|| (src_stride.is_none() && src_fmt.channels() * w * h != (data.len() as u32))
-	|| (src_stride.is_some() && (data.len() as u32) < stride * (h-1) + w * src_fmt.channels()) {
+	if w < 1 || h < 1 || 4/*SRC=RGBA*/ * w * h != data.len() as u32 {
 		return Err(::png::Error::InvalidArg("invalid dimensions or data length"))
 	}
 
 	let ec = &mut PngEncoder {
-		stream	: writer,
-		w		 : w,
-		h		 : h,
-		src_stride: stride,
-		src_fmt   : src_fmt,
-		tgt_fmt   : tgt_fmt,
-		data	  : data,
-		crc	   : Crc32::new(),
+		stream: writer,
+		w,
+		h,
+		alpha,
+		data,
+		crc: Crc32::new(),
 	};
 
 	try!(write_header(ec));
@@ -940,12 +811,9 @@ fn write_header<W: Write>(ec: &mut PngEncoder<W>) -> Result<(), Error> {
 	try!(ec.stream.write_all(height));				crc.put(height);
 	let tmp = [
 		8,		  // bit depth
-		match ec.tgt_fmt {	// color type
-			ColFmt::Y => PngColortype::Y,
-			ColFmt::YA => PngColortype::YA,
-			ColFmt::RGB => PngColortype::RGB,
-			ColFmt::RGBA => PngColortype::RGBA,
-			_ => return Err(::png::Error::Internal("wrong format")),
+		match ec.alpha {	// color type
+			false => PngColortype::RGB,
+			true => PngColortype::RGBA
 		} as u8,
 		0, 0, 0	 // compression, filter, interlace
 	];
@@ -985,28 +853,28 @@ struct PngEncoder<'r, W:'r> {
 	stream: &'r mut W,
 	w: u32,
 	h: u32,
-	src_stride: u32,
-	tgt_fmt: ColFmt,
-	src_fmt: ColFmt,
+	alpha: bool,
 	data: &'r [u8],
 	crc: Crc32,
 }
 
 fn write_image_data<W: Write>(ec: &mut PngEncoder<W>) -> Result<(), Error> {
-	let (convert, c0, c1, c2, c3) = try!(converter(ec.src_fmt, ec.tgt_fmt));
+	let (convert, c0, c1, c2, c3) = try!(converter(ColFmt::RGBA, 
+		if ec.alpha { ColFmt::RGBA } else { ColFmt::RGB }
+	));
 
-	let fstep = ec.tgt_fmt.channels();   // filter step
+	let fstep = if ec.alpha { 4 } else { 3 };   // filter step
 	let tgt_linesz = ec.w * fstep + 1;   // +1 for filter type
 	let mut cline = vec![0u8; tgt_linesz as usize];
 	let mut pline = vec![0u8; tgt_linesz as usize];
 	let mut filtered_image = vec![0u8; (tgt_linesz * ec.h) as usize];
 
-	let src_linesz = ec.w * ec.src_fmt.channels();
+	let pixel_size = ec.w * 4/*packed RGBA source*/;
 
 	let mut si = 0;
 	let mut ti = 0;
-	while si < ec.h * ec.src_stride {
-		convert(&ec.data[si as usize .. (si+src_linesz) as usize], &mut cline[1 .. tgt_linesz as usize],
+	while si < ec.h * pixel_size {
+		convert(&ec.data[si as usize .. (si+pixel_size) as usize], &mut cline[1 .. tgt_linesz as usize],
 				c0, c1, c2, c3);
 
 		for i in 1 .. fstep+1 {
@@ -1021,7 +889,7 @@ fn write_image_data<W: Write>(ec: &mut PngEncoder<W>) -> Result<(), Error> {
 
 		mem::swap(&mut cline, &mut pline);
 
-		si += ec.src_stride;
+		si += pixel_size;
 		ti += tgt_linesz;
 	}
 

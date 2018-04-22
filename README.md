@@ -1,4 +1,4 @@
-# Aldaron's Codec Interface / PNG 0.6.0
+# Aldaron's Codec Interface / PNG 0.6
 [Aldaron's Codec Interface / PNG](http://plopgrizzly.com/aci_png) is a library
 developed by [Plop Grizzly](http://plopgrizzly.com).  It encodes and
 decodes pngs and apngs(TODO).
