@@ -14,7 +14,7 @@
 
 [package]
 name = "aci_png"
-version = "0.6.0"
+version = "0.6.1"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
@@ -37,3 +37,4 @@ exclude = [
 [dependencies]
 afi = "^0.5"
 flate2 = "^0.2"
+byteorder = "1.2.2"

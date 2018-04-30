@@ -11,6 +11,9 @@
 	html_root_url = "http://plopgrizzly.com/aci_png/")]
 
 extern crate afi;
+extern crate byteorder;
+
+use byteorder::ReadBytesExt;
 
 mod png;
 
@@ -39,19 +42,12 @@ pub fn decode(png: &[u8]) -> Result<Graphic, GraphicDecodeErr> {
 
 	let size = (image.w * image.h) as usize;
 	let mut out: Vec<u32> = Vec::with_capacity(size);
-	let mut pixel: u32 = 0xFFFFFFFF;
-	let rgba: &mut [u8] = unsafe {
-		::std::slice::from_raw_parts_mut(&mut pixel as *mut _
-			as *mut u8, 4)
-	};
 
 	for i in 0..size {
-		rgba[0] = bytes[i * 4 + 0];
-		rgba[1] = bytes[i * 4 + 1];
-		rgba[2] = bytes[i * 4 + 2];
-		rgba[3] = bytes[i * 4 + 3];
-
-		out.push(pixel);
+		out.push((&bytes[i * 4 .. i * 4 + 4])
+			.read_u32::<byteorder::LittleEndian>()
+			.unwrap()
+		);
 	}
 
 	Ok(GraphicBuilder::new().rgba(image.w, image.h, out))
