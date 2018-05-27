@@ -1,8 +1,8 @@
-// lib.rs -- Aldaron's Codec Interface / PNG
+// "aci_png" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+//
 // File based on imagefmt source code
-// Copyright (c) 2014-2015  Tero Hänninen
-// Copyright (c) 2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+//  * Copyright (c) 2014-2015  Tero Hänninen
 
 // TODO: APNG support (https://en.wikipedia.org/wiki/APNG)
 // PNG:
@@ -10,12 +10,14 @@
 // APNG:
 //	PNG SIGNATURE, IHDR, acTL, fcTL, IDAT, [fcTL, fdAT], IEND
 
-extern crate flate2;
+extern crate deflate;
+extern crate inflate;
 use std::io::{Read, Write, Seek, SeekFrom};
 use std::iter::{repeat};
 use std::mem::{self, size_of};
-use self::flate2::read::{ZlibDecoder, ZlibEncoder};
-use self::flate2::Compression;
+use self::deflate::write::{ZlibEncoder};
+use self::deflate::Compression;
+use self::inflate::InflateStream;
 use self::internal::Sample;
 use self::internal::{ToVec, Buffer};
 use std;
@@ -474,7 +476,19 @@ fn read_idat_stream<R: Read>(dc: &mut PngDecoder<R>, len: &mut usize, palette: &
 	let (convert16, c0, c1, c2, c3) = try!(converter::<u16>(dc.src_fmt, ColFmt::RGBA));
 
 	let compressed_data = try!(read_idat_chunks(dc, len));
-	let mut zlib = ZlibDecoder::new(&compressed_data[..]);
+	let mut inflater = InflateStream::from_zlib();
+	let mut decoded = Vec::<u8>::new();
+	let mut n = 0;
+	while n < compressed_data.len() {
+	    let res = inflater.update(&compressed_data[n..]);
+	    if let Ok((num_bytes_read, result)) = res {
+		n += num_bytes_read;
+		decoded.extend(result.iter().cloned());
+	    } else {
+		res.unwrap();
+	    }
+	}
+	let mut zlib = ::std::io::Cursor::new(decoded);
 
 	match dc.ilace {
 		PngInterlace::None => {
@@ -893,11 +907,14 @@ fn write_image_data<W: Write>(ec: &mut PngEncoder<W>) -> Result<(), Error> {
 		ti += tgt_linesz;
 	}
 
-	let mut zlibenc = ZlibEncoder::new(&filtered_image[..], Compression::Fast);
+	let mut zlibenc = ZlibEncoder::new(Vec::new(), Compression::Fast);
+	zlibenc.write_all(filtered_image.as_slice())?;
+	let mut compressed_data = ::std::io::Cursor::new(zlibenc.finish()?);
+
 	let mut compressed = [0u8; 1024*32];
 
 	loop {
-		let n = try!(zlibenc.read(&mut compressed[..]));
+		let n = try!(compressed_data.read(&mut compressed[..]));
 		if n == 0 { break }
 		ec.crc.put(b"IDAT");
 		ec.crc.put(&compressed[..n]);

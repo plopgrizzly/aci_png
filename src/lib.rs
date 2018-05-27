@@ -1,7 +1,6 @@
-// lib.rs -- Aldaron's Codec Interface / PNG
-// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
-
+// "aci_png" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+//
 //! Aldaron's Codec Interface / PNG is a library developed by Plop Grizzly to
 //! encode(TODO) and decode png and apng(TODO) image files.
 

@@ -1,6 +1,5 @@
-# Cargo.toml -- Aldaron's Codec Interface / PNG
-# Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-# Licensed under the MIT LICENSE
+# "aci_png" crate - Licensed under the MIT LICENSE
+#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 #                             _        _
 #                            /@\——————/@\
 # .———  .                   |   o    o   |     .————      .            .
@@ -14,7 +13,7 @@
 
 [package]
 name = "aci_png"
-version = "0.6.1"
+version = "0.6.2"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
@@ -24,17 +23,18 @@ documentation = "https://docs.rs/aci_png"
 homepage = "http://plopgrizzly.com/aci_png"
 repository = "https://github.com/plopgrizzly/aci_png"
 
-readme = "README.md"
+readme = "readme.md"
 description = "Encode and decode png and apng(TODO) image files."
 keywords = ["image", "png", "codec", "parse", "decoder"]
 categories = ["encoding", "parsing", "data-structures", "multimedia"]
 
 exclude = [
-	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
+	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
 	"_config.yml", "ISSUE_TEMPLATE.md", "icon.ico", "icon.png"
 ]
 
 [dependencies]
 afi = "^0.5"
-flate2 = "^0.2"
-byteorder = "1.2.2"
+deflate = "^0.7"
+inflate = "^0.4"
+byteorder = "^1.2"
