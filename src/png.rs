@@ -1,8 +1,11 @@
-// "aci_png" crate - Licensed under the MIT LICENSE
-//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+// "aci_png" - Aldaron's Codec Interface / PNG
 //
-// File based on imagefmt source code
-//  * Copyright (c) 2014-2015  Tero Hänninen
+// Copyright Jeron A. Lau 2017-2018.
+// Distributed under the Boost Software License, Version 1.0.  (See accompanying
+// file LICENSE or copy at https://www.boost.org/LICENSE_1_0.txt)
+//
+// File based on imagefmt source code licensed under the MIT license.
+// Copyright Tero Hänninen 2014-2015.
 
 // TODO: APNG support (https://en.wikipedia.org/wiki/APNG)
 // PNG:
@@ -122,8 +125,8 @@ impl std::error::Error for Error {
 
 #[derive(Clone)]
 pub struct Image<T> {
-	pub w: u32,
-	pub h: u32,
+	pub w: u16,
+	pub h: u16,
 	pub buf: Vec<T>,
 }
 
@@ -260,8 +263,8 @@ pub fn read_chunks<R, T>(reader: &mut R, chunk_names: &[[u8; 4]])
 	let dc = &mut try!(init_decoder(reader, size_of::<T>() * 8));
 	let (buf, chunks) = try!(decode(dc, chunk_names));
 	Ok((Image {
-	   w: dc.w,
-	   h: dc.h,
+	   w: dc.w as u16,
+	   h: dc.h as u16,
 	   buf: try!(buf.vec()),
 	}, chunks))
 }
@@ -778,10 +781,10 @@ pub struct ExtChunk {
 
 /// Writes an image and converts it to requested color type.
 #[inline]
-pub fn write<W: Write>(writer: &mut W, w: u32, h: u32, data: &[u8], alpha: bool)
+pub fn write<W: Write>(writer: &mut W, w: u16, h: u16, data: &[u8], alpha: bool)
 	-> Result<(), Error>
 {
-	write_chunks(writer, w, h, data, alpha, &[])
+	write_chunks(writer, w as u32, h as u32, data, alpha, &[])
 }
 
 /// Like `png::write` but also writes the given extension chunks.

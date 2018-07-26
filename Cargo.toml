@@ -1,5 +1,4 @@
-# "aci_png" crate - Licensed under the MIT LICENSE
-#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+# "aci_png" - Aldaron's Codec Interface / PNG
 #                             _        _
 #                            /@\——————/@\
 # .———  .                   |   o    o   |     .————      .            .
@@ -10,31 +9,28 @@
 # |     |   ———   |       |                |    ————  |   | :——— :———  |   |
 #                 |        \              /                              __/
 #                           ¯————————————¯
+#
+# Copyright Jeron A. Lau 2017-2018.
+# Distributed under the Boost Software License, Version 1.0.  (See accompanying
+# file LICENSE or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 [package]
 name = "aci_png"
-version = "0.6.2"
+version = "0.7.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
-
-license = "MIT"
+license = "BSL-1.0"
 documentation = "https://docs.rs/aci_png"
-homepage = "http://plopgrizzly.com/aci_png"
-repository = "https://github.com/plopgrizzly/aci_png"
-
-readme = "readme.md"
+homepage = "https://gitlab.com/plopgrizzly/multimedia"
+repository = "https://gitlab.com/plopgrizzly/multimedia/aci_png"
+readme = "README.md"
 description = "Encode and decode png and apng(TODO) image files."
 keywords = ["image", "png", "codec", "parse", "decoder"]
 categories = ["encoding", "parsing", "data-structures", "multimedia"]
 
-exclude = [
-	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
-	"_config.yml", "ISSUE_TEMPLATE.md", "icon.ico", "icon.png"
-]
-
 [dependencies]
-afi = "^0.5"
-deflate = "^0.7"
-inflate = "^0.4"
-byteorder = "^1.2"
+afi = "0.7"
+deflate = "0.7"
+inflate = "0.4"
+byteorder = "1.2"
