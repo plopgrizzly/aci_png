@@ -1,27 +1,20 @@
-# Aldaron's Codec Interface / PNG
-[Aldaron's Codec Interface / PNG](http://plopgrizzly.com/aci_png) is a library
-developed by [Plop Grizzly](http://plopgrizzly.com).  It encodes and
-decodes pngs and apngs(TODO).
-
-[Cargo](https://crates.io/crates/aci_png) /
-[Documentation](https://docs.rs/aci_png)
+# [Aldaron's Codec Interface / PNG](https://crates.io/crates/aci_png)
+Encode and decode png and apng(TODO) image files.
 
 ## Features
-**aci_png**'s current features:
-* Decode png image files
-* Encode png image files
+* Decode png image files.
+* Encode png image files.
+* Encoding & decoding is integrated with afi crate.
 
-**aci_png**'s planned features:
+## [Contributing](http://plopgrizzly.com/contributing/en#contributing)
+
+## Roadmap to 1.0 (Future Features)
 * Decode apng files.
 * Encode apng files.
-* Multithreaded png loading to load a bunch of files at once
+* Multithreaded png loading to load a bunch of files at once.
 
-## Roadmap
-* Implement all planned features
-* Release 1.0.0 of afi
-* Release 1.0.0 of this crate (aci\_png)
+## Change Log
+### 0.7
+* Now uses afi 0.7 for API template.
 
-# Contributing
-If you'd like to help implement functions for unsupported platforms, fix bugs,
-improve the API or improve the Documentation, then contact me at
-jeron.lau@plopgrizzly.com. I'll appreciate any help.
+## Developed by [Plop Grizzly](http://plopgrizzly.com)
