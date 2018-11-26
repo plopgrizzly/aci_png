@@ -1,9 +1,7 @@
-// "aci_png" - Aldaron's Codec Interface / PNG
-//
-// Copyright Jeron A. Lau 2017-2018.
-// Distributed under the Boost Software License, Version 1.0.  (See accompanying
-// file LICENSE or copy at https://www.boost.org/LICENSE_1_0.txt)
-//
+// Copyright Jeron Lau 2017 - 2018.
+// Dual-licensed under either the MIT License or the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
 //! Aldaron's Codec Interface / PNG is a library developed by Plop Grizzly to
 //! encode and decode png and apng(TODO) image files.
 
@@ -80,7 +78,7 @@ impl<T> Decoder<T> for PngDecoder<T> where T: Read + Seek {
 			* channels.n_channels());
 
 		for i in 0..size {
-			let rgba = channels.from(Rgba,
+			let rgba = channels.from(Srgba,
 				[bytes[i*4+0], bytes[i*4+1],
 				 bytes[i*4+2], bytes[i*4+3]]);
 
